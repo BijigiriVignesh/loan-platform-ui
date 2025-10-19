@@ -21,6 +21,7 @@ import {
   CreditCard,
   Shield,
   Camera,
+  ArrowLeft,
   CheckCircle,
   AlertCircle,
   Eye,
@@ -135,8 +136,12 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-              Back to Home
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
             </Link>
           </div>
           <div className="flex items-center space-x-2">
