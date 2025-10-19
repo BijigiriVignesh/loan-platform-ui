@@ -6,7 +6,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -396,6 +403,12 @@ export default function AdminDashboard() {
   const [actionType, setActionType] = useState("")
   const [activeTab, setActiveTab] = useState("loans")
   const [requests, setRequests] = useState(pendingRequests)
+  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false)
+  const [selectedLoanForCollection, setSelectedLoanForCollection] = useState<any>(null)
+  const [collectionFormData, setCollectionFormData] = useState({
+    agent: "",
+    pickupDate: "",
+  })
 
   const filteredLoans = mockLoans.filter((loan) => {
     const matchesSearch =
@@ -427,6 +440,22 @@ export default function AdminDashboard() {
     setSelectedLoan(null)
     setActionType("")
     setCollectionNote("")
+  }
+
+  const handleAssignCollection = (loan: any) => {
+    setSelectedLoanForCollection(loan)
+    setCollectionFormData({ agent: "", pickupDate: "" })
+    setIsCollectionDialogOpen(true)
+  }
+
+  const submitCollectionAssignment = () => {
+    console.log("Collection assigned:", {
+      loanId: selectedLoanForCollection?.id,
+      agent: collectionFormData.agent,
+      pickupDate: collectionFormData.pickupDate,
+    })
+    setIsCollectionDialogOpen(false)
+    setSelectedLoanForCollection(null)
   }
 
   const handleApprove = (requestId: string, terms: any) => {
@@ -661,6 +690,13 @@ export default function AdminDashboard() {
                             </Link>
                           </Button>
 
+                          {loan.status === "active" && (
+                            <Button size="sm" onClick={() => handleAssignCollection(loan)}>
+                              <MapPin className="w-4 h-4 mr-1" />
+                              Assign Collection
+                            </Button>
+                          )}
+
                           {loan.status === "overdue" && (
                             <div className="flex gap-2">
                               <Button size="sm" variant="outline" onClick={() => handleCollectionAction(loan, "call")}>
@@ -822,6 +858,88 @@ export default function AdminDashboard() {
                 </Button>
                 <Button variant="outline" onClick={() => setSelectedLoan(null)} className="flex-1">
                   Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Inline Collection Assignment Dialog */}
+        <Dialog open={isCollectionDialogOpen} onOpenChange={setIsCollectionDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Assign Asset Collection</DialogTitle>
+              <DialogDescription>
+                Assign an agent or yourself to collect the asset for loan {selectedLoanForCollection?.id}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Borrower Details</Label>
+                <Card className="bg-muted/50">
+                  <CardContent className="p-3 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Name:</span>
+                      <span className="font-medium">{selectedLoanForCollection?.borrower}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Asset:</span>
+                      <span className="font-medium">{selectedLoanForCollection?.asset}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Loan Amount:</span>
+                      <span className="font-medium">₹{selectedLoanForCollection?.loanAmount?.toLocaleString()}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div>
+                <Label htmlFor="agent-select" className="text-sm font-medium mb-2 block">
+                  Select Agent or Assign to Yourself
+                </Label>
+                <Select
+                  value={collectionFormData.agent}
+                  onValueChange={(value) => setCollectionFormData((prev) => ({ ...prev, agent: value }))}
+                >
+                  <SelectTrigger id="agent-select">
+                    <SelectValue placeholder="Choose an agent" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="myself">Myself (Admin)</SelectItem>
+                    <SelectItem value="vikram">Vikram Desai - Senior Agent</SelectItem>
+                    <SelectItem value="priya">Priya Sharma - Senior Agent</SelectItem>
+                    <SelectItem value="amit">Amit Singh - Agent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="pickup-date" className="text-sm font-medium mb-2 block">
+                  Scheduled Pickup Date
+                </Label>
+                <Input
+                  id="pickup-date"
+                  type="date"
+                  value={collectionFormData.pickupDate}
+                  onChange={(e) => setCollectionFormData((prev) => ({ ...prev, pickupDate: e.target.value }))}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  className="flex-1 bg-transparent"
+                  onClick={() => setIsCollectionDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={submitCollectionAssignment}
+                  disabled={!collectionFormData.agent || !collectionFormData.pickupDate}
+                >
+                  Assign Collection
                 </Button>
               </div>
             </div>

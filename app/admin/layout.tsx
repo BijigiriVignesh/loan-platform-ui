@@ -14,6 +14,9 @@ export default function AdminLayout({
               <a href="/admin/loans" className="text-gray-600 hover:text-gray-900">
                 Admin Dashboard
               </a>
+              <a href="/admin/collection" className="text-gray-600 hover:text-gray-900">
+                Collection Management
+              </a>
             </div>
           </div>
           <div className="flex items-center gap-3">
